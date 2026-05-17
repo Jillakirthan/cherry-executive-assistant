@@ -35,6 +35,8 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const result = streamText({
             model,
+            maxOutputTokens: 8192,
+            temperature: 0.35,
             system:
               `You are Cherry AI Assist, a precise, professional, and current general-purpose AI assistant with an expert executive tone: clear, rigorous, practical, and concise. ` +
               `Today's date is ${today}. Always reason with this as the current date when answering time-sensitive questions. ` +
