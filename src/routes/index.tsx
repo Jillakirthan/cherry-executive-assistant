@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
-import cherryLogo from "@/assets/cherry-logo.png";
+import cherryLogo from "@/assets/cherry-logo.svg";
 import {
   Conversation,
   ConversationContent,
