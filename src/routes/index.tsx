@@ -189,15 +189,35 @@ function ChatPage() {
               <p className="text-xs text-muted-foreground">AI assistant</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={newChat}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            New chat
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={toggleVoiceOut}
+              title={voiceOut ? "Mute voice" : "Read replies aloud"}
+              aria-pressed={voiceOut}
+              className={
+                voiceOut
+                  ? "text-primary hover:text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }
+            >
+              {voiceOut ? (
+                <Volume2 className="h-4 w-4" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={newChat}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" />
+              New chat
+            </Button>
+          </div>
         </div>
       </header>
 
