@@ -304,7 +304,26 @@ function ChatPage() {
               placeholder="Message Cherry…"
               autoFocus
             />
-            <PromptInputFooter className="justify-end">
+            <PromptInputFooter className="justify-between">
+              <Button
+                type="button"
+                variant={listening ? "default" : "ghost"}
+                size="icon-sm"
+                onClick={toggleMic}
+                aria-pressed={listening}
+                title={listening ? "Stop listening" : "Speak to Cherry"}
+                className={
+                  listening
+                    ? "bg-primary text-primary-foreground shadow-glow animate-pulse"
+                    : "text-muted-foreground hover:text-foreground"
+                }
+              >
+                {listening ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
               <PromptInputSubmit
                 status={status}
                 disabled={!input.trim() && !isBusy}
