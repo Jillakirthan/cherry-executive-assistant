@@ -3,7 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Mic, MicOff, Plus, Volume2, VolumeX } from "lucide-react";
+import { CheckCircle2, Mic, MicOff, Plus, Sparkles, Volume2, VolumeX } from "lucide-react";
 
 import cherryLogo from "@/assets/cherry-logo.svg";
 import {
@@ -54,10 +54,10 @@ export const Route = createFileRoute("/")({
 });
 
 const SUGGESTIONS = [
-  "Explain quantum entanglement like I'm 12",
-  "Draft a friendly out-of-office email",
-  "Write a regex for an email address in JS",
-  "Give me 5 dinner ideas using chickpeas",
+  "Who is the present CM of Tamil Nadu in 2026?",
+  "Write a professional email about a project delay",
+  "Summarize this idea into a clear business plan",
+  "Explain this topic like a senior expert",
 ];
 
 function ChatPage() {
