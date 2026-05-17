@@ -3,7 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Mic, MicOff, Plus, Volume2, VolumeX } from "lucide-react";
 
 import cherryLogo from "@/assets/cherry-logo.svg";
 import {
@@ -26,6 +26,13 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
+import {
+  cancelSpeech,
+  isSpeechRecognitionSupported,
+  isSpeechSynthesisSupported,
+  speak,
+  useSpeechRecognition,
+} from "@/lib/voice";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,7 +63,12 @@ const SUGGESTIONS = [
 function ChatPage() {
   const [input, setInput] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  const [voiceOut, setVoiceOut] = useState(false);
+  const lastSpokenIdRef = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const sttSupported = isSpeechRecognitionSupported();
+  const ttsSupported = isSpeechSynthesisSupported();
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
     id: `cherry-${resetKey}`,
@@ -74,6 +86,68 @@ function ChatPage() {
     textareaRef.current?.focus();
   }, [resetKey, status]);
 
+  // Speak assistant replies when voice output is on
+  useEffect(() => {
+    if (!voiceOut || status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (lastSpokenIdRef.current === last.id) return;
+    const text = last.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join(" ")
+      .trim();
+    if (text) {
+      lastSpokenIdRef.current = last.id;
+      speak(text);
+    }
+  }, [voiceOut, status, messages]);
+
+  // Stop speech when toggled off / unmounted
+  useEffect(() => {
+    if (!voiceOut) cancelSpeech();
+    return () => cancelSpeech();
+  }, [voiceOut]);
+
+  const handleVoiceFinal = useCallback(
+    (text: string) => {
+      if (!text || isBusy) return;
+      void sendMessage({ text });
+      setInput("");
+    },
+    [isBusy, sendMessage],
+  );
+
+  const { listening, start: startListening, stop: stopListening } =
+    useSpeechRecognition({
+      onFinal: handleVoiceFinal,
+      onInterim: (t) => setInput(t),
+    });
+
+  const toggleMic = () => {
+    if (!sttSupported) {
+      toast.error("Voice input isn't supported in this browser. Try Chrome.");
+      return;
+    }
+    if (listening) {
+      stopListening();
+    } else {
+      cancelSpeech();
+      const ok = startListening();
+      if (!ok) toast.error("Couldn't start microphone.");
+    }
+  };
+
+  const toggleVoiceOut = () => {
+    if (!ttsSupported) {
+      toast.error("Voice output isn't supported in this browser.");
+      return;
+    }
+    setVoiceOut((v) => {
+      if (v) cancelSpeech();
+      return !v;
+    });
+  };
+
   const handleSubmit = useCallback(
     (message: PromptInputMessage) => {
       const text = message.text?.trim();
@@ -90,8 +164,11 @@ function ChatPage() {
   };
 
   const newChat = () => {
+    cancelSpeech();
+    stopListening();
     setMessages([]);
     setInput("");
+    lastSpokenIdRef.current = null;
     setResetKey((k) => k + 1);
   };
 
@@ -112,15 +189,35 @@ function ChatPage() {
               <p className="text-xs text-muted-foreground">AI assistant</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={newChat}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            New chat
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={toggleVoiceOut}
+              title={voiceOut ? "Mute voice" : "Read replies aloud"}
+              aria-pressed={voiceOut}
+              className={
+                voiceOut
+                  ? "text-primary hover:text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }
+            >
+              {voiceOut ? (
+                <Volume2 className="h-4 w-4" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={newChat}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" />
+              New chat
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -207,7 +304,26 @@ function ChatPage() {
               placeholder="Message Cherry…"
               autoFocus
             />
-            <PromptInputFooter className="justify-end">
+            <PromptInputFooter className="justify-between">
+              <Button
+                type="button"
+                variant={listening ? "default" : "ghost"}
+                size="icon-sm"
+                onClick={toggleMic}
+                aria-pressed={listening}
+                title={listening ? "Stop listening" : "Speak to Cherry"}
+                className={
+                  listening
+                    ? "bg-primary text-primary-foreground shadow-glow animate-pulse"
+                    : "text-muted-foreground hover:text-foreground"
+                }
+              >
+                {listening ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
               <PromptInputSubmit
                 status={status}
                 disabled={!input.trim() && !isBusy}
@@ -216,7 +332,9 @@ function ChatPage() {
             </PromptInputFooter>
           </PromptInput>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Cherry can make mistakes. Verify important info.
+            {listening
+              ? "Listening… speak now"
+              : "Cherry can make mistakes. Verify important info."}
           </p>
         </div>
       </main>
