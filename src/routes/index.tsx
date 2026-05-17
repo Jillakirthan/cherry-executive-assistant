@@ -332,7 +332,9 @@ function ChatPage() {
             </PromptInputFooter>
           </PromptInput>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Cherry can make mistakes. Verify important info.
+            {listening
+              ? "Listening… speak now"
+              : "Cherry can make mistakes. Verify important info."}
           </p>
         </div>
       </main>
