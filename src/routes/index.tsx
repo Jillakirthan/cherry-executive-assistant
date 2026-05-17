@@ -3,7 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Mic, MicOff, Plus, Volume2, VolumeX } from "lucide-react";
 
 import cherryLogo from "@/assets/cherry-logo.svg";
 import {
@@ -26,6 +26,13 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Button } from "@/components/ui/button";
+import {
+  cancelSpeech,
+  isSpeechRecognitionSupported,
+  isSpeechSynthesisSupported,
+  speak,
+  useSpeechRecognition,
+} from "@/lib/voice";
 
 export const Route = createFileRoute("/")({
   head: () => ({
