@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
-import novaLogo from "@/assets/nova-logo.png";
+import cherryLogo from "@/assets/cherry-logo.svg";
 import {
   Conversation,
   ConversationContent,
@@ -30,13 +30,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nova — AI Chat Assistant" },
+      { title: "Cherry — AI Chat Assistant" },
       {
         name: "description",
         content:
-          "Chat with Nova, a fast, thoughtful AI assistant. Ask questions, draft text, write code, and more.",
+          "Chat with Cherry, a fast, thoughtful AI assistant. Ask questions, draft text, write code, and more.",
       },
-      { property: "og:title", content: "Nova — AI Chat Assistant" },
+      { property: "og:title", content: "Cherry — AI Chat Assistant" },
       {
         property: "og:description",
         content: "A fast, thoughtful AI assistant for everyday questions.",
@@ -59,11 +59,11 @@ function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
-    id: `nova-${resetKey}`,
+    id: `cherry-${resetKey}`,
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     onError: (err) => {
       console.error(err);
-      toast.error("Couldn't reach Nova. Please try again.");
+      toast.error("Couldn't reach Cherry. Please try again.");
     },
   });
 
@@ -101,14 +101,14 @@ function ChatPage() {
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <img
-              src={novaLogo}
-              alt="Nova"
+              src={cherryLogo}
+              alt="Cherry"
               width={36}
               height={36}
               className="h-9 w-9 rounded-full shadow-glow"
             />
             <div className="leading-tight">
-              <h1 className="text-base font-semibold tracking-tight">Nova</h1>
+              <h1 className="text-base font-semibold tracking-tight">Cherry</h1>
               <p className="text-xs text-muted-foreground">AI assistant</p>
             </div>
           </div>
@@ -131,14 +131,14 @@ function ChatPage() {
               <ConversationEmptyState
                 icon={
                   <img
-                    src={novaLogo}
+                    src={cherryLogo}
                     alt=""
                     width={72}
                     height={72}
                     className="h-18 w-18 rounded-full shadow-glow"
                   />
                 }
-                title="Hi, I'm Nova."
+                title="Hi, I'm Cherry."
                 description="Ask me anything — I'll do my best to help."
               >
                 <div className="mt-6 grid w-full max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">
@@ -204,7 +204,7 @@ function ChatPage() {
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Message Nova…"
+              placeholder="Message Cherry…"
               autoFocus
             />
             <PromptInputFooter className="justify-end">
@@ -216,7 +216,7 @@ function ChatPage() {
             </PromptInputFooter>
           </PromptInput>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Nova can make mistakes. Verify important info.
+            Cherry can make mistakes. Verify important info.
           </p>
         </div>
       </main>

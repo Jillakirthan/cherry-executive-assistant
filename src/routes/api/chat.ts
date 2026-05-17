@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/chat")({
           const result = streamText({
             model,
             system:
-              "You are Nova, a thoughtful, concise general-purpose AI assistant. " +
+              "You are Cherry, a thoughtful, concise general-purpose AI assistant. " +
               "Use clean Markdown. Be friendly, direct, and helpful. " +
               "When asked about code, use fenced code blocks with language tags.",
             messages: await convertToModelMessages(messages as UIMessage[]),
