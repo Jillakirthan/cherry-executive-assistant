@@ -165,7 +165,7 @@ function ChatPage() {
                     </MessageContent>
                   ) : (
                     <MessageContent
-                      variant="flat"
+                     
                       className="bg-transparent px-0 py-0 text-foreground"
                     >
                       {m.parts.map((p, i) =>
@@ -182,7 +182,7 @@ function ChatPage() {
             {status === "submitted" && (
               <Message from="assistant">
                 <MessageContent
-                  variant="flat"
+                 
                   className="bg-transparent px-0 py-0"
                 >
                   <Shimmer>Thinking…</Shimmer>
