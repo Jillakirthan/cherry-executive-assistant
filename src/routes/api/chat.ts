@@ -20,15 +20,25 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const gateway = createLovableAiGatewayProvider(key);
-        const model = gateway("google/gemini-3-flash-preview");
+        const model = gateway("google/gemini-3.1-pro-preview");
+
+        const today = new Date().toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
 
         try {
           const result = streamText({
             model,
             system:
-              "You are Cherry, a thoughtful, concise general-purpose AI assistant. " +
-              "Use clean Markdown. Be friendly, direct, and helpful. " +
-              "When asked about code, use fenced code blocks with language tags.",
+              `You are Cherry, a thoughtful, concise, and up-to-date general-purpose AI assistant. ` +
+              `Today's date is ${today}. Always reason with this as the current date when answering time-sensitive questions. ` +
+              `If a question requires information beyond your training cutoff (recent news, live prices, sports scores, weather, etc.), clearly say you may not have the very latest data and recommend the user verify with a live source — do not fabricate. ` +
+              `Prefer recent, well-sourced facts over older ones. When uncertain, say so explicitly. ` +
+              `Use clean Markdown. Be friendly, direct, and helpful. ` +
+              `When asked about code, use fenced code blocks with language tags.`,
             messages: await convertToModelMessages(messages as UIMessage[]),
           });
 
