@@ -118,11 +118,12 @@
       -apple-system,
       sans-serif;
     font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
   }
 
-  body {
-    background-image: var(--gradient-aurora);
-    background-attachment: fixed;
+  .font-serif {
+    font-family: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+    font-feature-settings: "liga", "dlig";
   }
 }
 
@@ -132,6 +133,9 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
   }
   .shadow-glow {
     box-shadow: var(--shadow-glow);
