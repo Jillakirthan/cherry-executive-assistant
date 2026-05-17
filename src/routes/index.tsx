@@ -173,23 +173,23 @@ function ChatPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b border-border/50 bg-background/60 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+    <div className="relative flex min-h-screen flex-col bg-background text-foreground">
+      <header className="sticky top-0 z-20 border-b border-border/50 bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
             <img
               src={cherryLogo}
-              alt="Cherry"
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-full shadow-glow"
+              alt="Cherry AI Assist"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full shadow-glow"
             />
-            <div className="leading-tight">
-              <h1 className="text-base font-semibold tracking-tight">Cherry</h1>
-              <p className="text-xs text-muted-foreground">AI assistant</p>
+            <div className="min-w-0 leading-tight">
+              <h1 className="truncate text-base font-semibold">Cherry AI Assist</h1>
+              <p className="truncate text-xs text-muted-foreground">Professional chat</p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="ghost"
               size="icon-sm"
@@ -202,11 +202,7 @@ function ChatPage() {
                   : "text-muted-foreground hover:text-foreground"
               }
             >
-              {voiceOut ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
+              {voiceOut ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>
             <Button
               variant="ghost"
@@ -215,128 +211,163 @@ function ChatPage() {
               className="gap-2 text-muted-foreground hover:text-foreground"
             >
               <Plus className="h-4 w-4" />
-              New chat
+              <span className="hidden sm:inline">New chat</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4">
-        <Conversation className="flex-1">
-          <ConversationContent className="space-y-6 py-8">
-            {messages.length === 0 ? (
-              <ConversationEmptyState
-                icon={
-                  <img
-                    src={cherryLogo}
-                    alt=""
-                    width={72}
-                    height={72}
-                    className="h-18 w-18 rounded-full shadow-glow"
-                  />
-                }
-                title="Hi, I'm Cherry."
-                description="Ask me anything — I'll do my best to help."
-              >
-                <div className="mt-6 grid w-full max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => sendSuggestion(s)}
-                      className="rounded-xl border border-border/60 bg-card/40 px-4 py-3 text-left text-sm text-foreground/90 transition hover:border-primary/50 hover:bg-card/70 hover:shadow-glow"
-                    >
-                      {s}
-                    </button>
-                  ))}
+      <main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 gap-6 px-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="hidden border-r border-border/40 py-6 pr-6 lg:block">
+          <div className="sticky top-20 space-y-4">
+            <div className="rounded-2xl border border-border/60 bg-card/55 p-4 shadow-glow">
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Expert mode
+              </div>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>Direct answers for current facts.</span>
                 </div>
-              </ConversationEmptyState>
-            ) : (
-              messages.map((m: UIMessage) => (
-                <Message key={m.id} from={m.role}>
-                  {m.role === "user" ? (
-                    <MessageContent className="bg-primary text-primary-foreground">
-                      {m.parts.map((p, i) =>
-                        p.type === "text" ? <span key={i}>{p.text}</span> : null,
-                      )}
+                <div className="flex gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>Cleaner writing for emails, plans, and notes.</span>
+                </div>
+                <div className="flex gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>Voice input and spoken replies.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section className="flex min-h-[calc(100vh-65px)] min-w-0 flex-col">
+          <Conversation className="flex-1">
+            <ConversationContent className="gap-5 px-0 py-8">
+              {messages.length === 0 ? (
+                <ConversationEmptyState className="items-start justify-start px-0 py-6 text-left">
+                  <div className="w-full max-w-3xl space-y-6">
+                    <div className="space-y-3">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 px-3 py-1 text-xs text-muted-foreground">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                        Live verification for current office-holder questions
+                      </div>
+                      <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                        Ask clearly. Get a precise answer.
+                      </h2>
+                      <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                        Cherry now checks supported current facts before answering and writes in a cleaner professional style.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {SUGGESTIONS.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => sendSuggestion(s)}
+                          className="min-h-16 rounded-xl border border-border/60 bg-card/55 px-4 py-3 text-left text-sm leading-5 text-foreground/90 transition hover:border-primary/50 hover:bg-card/80 hover:shadow-glow"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </ConversationEmptyState>
+              ) : (
+                messages.map((m: UIMessage) => (
+                  <Message key={m.id} from={m.role} className="max-w-full">
+                    {m.role === "user" ? (
+                      <MessageContent className="max-w-[88%] rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
+                        {m.parts.map((p, i) =>
+                          p.type === "text" ? <span key={i}>{p.text}</span> : null,
+                        )}
+                      </MessageContent>
+                    ) : (
+                      <div className="flex gap-3">
+                        <img
+                          src={cherryLogo}
+                          alt=""
+                          width={28}
+                          height={28}
+                          className="mt-1 h-7 w-7 shrink-0 rounded-full"
+                        />
+                        <MessageContent className="min-w-0 max-w-none rounded-2xl border border-border/60 bg-card/45 px-4 py-3 text-foreground">
+                          {m.parts.map((p, i) =>
+                            p.type === "text" ? (
+                              <MessageResponse key={i}>{p.text}</MessageResponse>
+                            ) : null,
+                          )}
+                        </MessageContent>
+                      </div>
+                    )}
+                  </Message>
+                ))
+              )}
+
+              {status === "submitted" && (
+                <Message from="assistant" className="max-w-full">
+                  <div className="flex gap-3">
+                    <img
+                      src={cherryLogo}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="mt-1 h-7 w-7 shrink-0 rounded-full"
+                    />
+                    <MessageContent className="rounded-2xl border border-border/60 bg-card/45 px-4 py-3">
+                      <Shimmer>Checking and thinking…</Shimmer>
                     </MessageContent>
-                  ) : (
-                    <MessageContent
-                     
-                      className="bg-transparent px-0 py-0 text-foreground"
-                    >
-                      {m.parts.map((p, i) =>
-                        p.type === "text" ? (
-                          <MessageResponse key={i}>{p.text}</MessageResponse>
-                        ) : null,
-                      )}
-                    </MessageContent>
-                  )}
+                  </div>
                 </Message>
-              ))
-            )}
+              )}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
 
-            {status === "submitted" && (
-              <Message from="assistant">
-                <MessageContent
-                 
-                  className="bg-transparent px-0 py-0"
-                >
-                  <Shimmer>Thinking…</Shimmer>
-                </MessageContent>
-              </Message>
-            )}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
-
-        <div className="sticky bottom-0 pb-6 pt-2">
-          <PromptInput
-            onSubmit={handleSubmit}
-            globalDrop={false}
-            multiple={false}
-            className="overflow-hidden rounded-2xl border-border/60 bg-card/60 backdrop-blur-xl shadow-glow"
-          >
-            <PromptInputTextarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Message Cherry…"
-              autoFocus
-            />
-            <PromptInputFooter className="justify-between">
-              <Button
-                type="button"
-                variant={listening ? "default" : "ghost"}
-                size="icon-sm"
-                onClick={toggleMic}
-                aria-pressed={listening}
-                title={listening ? "Stop listening" : "Speak to Cherry"}
-                className={
-                  listening
-                    ? "bg-primary text-primary-foreground shadow-glow animate-pulse"
-                    : "text-muted-foreground hover:text-foreground"
-                }
-              >
-                {listening ? (
-                  <MicOff className="h-4 w-4" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </Button>
-              <PromptInputSubmit
-                status={status}
-                disabled={!input.trim() && !isBusy}
-                onClick={isBusy ? () => stop() : undefined}
+          <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pb-6 pt-4">
+            <PromptInput
+              onSubmit={handleSubmit}
+              globalDrop={false}
+              multiple={false}
+              className="overflow-hidden rounded-2xl border-border/70 bg-card/80 shadow-glow backdrop-blur-xl"
+            >
+              <PromptInputTextarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask Cherry anything…"
+                autoFocus
               />
-            </PromptInputFooter>
-          </PromptInput>
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            {listening
-              ? "Listening… speak now"
-              : "Cherry can make mistakes. Verify important info."}
-          </p>
-        </div>
+              <PromptInputFooter className="justify-between">
+                <Button
+                  type="button"
+                  variant={listening ? "default" : "ghost"}
+                  size="icon-sm"
+                  onClick={toggleMic}
+                  aria-pressed={listening}
+                  title={listening ? "Stop listening" : "Speak to Cherry"}
+                  className={
+                    listening
+                      ? "animate-pulse bg-primary text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }
+                >
+                  {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <PromptInputSubmit
+                  status={status}
+                  disabled={!input.trim() && !isBusy}
+                  onClick={isBusy ? () => stop() : undefined}
+                />
+              </PromptInputFooter>
+            </PromptInput>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              {listening ? "Listening… speak now" : "Cherry checks supported live facts and may still need verification for critical decisions."}
+            </p>
+          </div>
+        </section>
       </main>
     </div>
   );
