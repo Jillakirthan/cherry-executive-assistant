@@ -62,50 +62,44 @@
 }
 
 :root {
-  --radius: 0.875rem;
-  --background: oklch(0.18 0.03 285);
-  --foreground: oklch(0.97 0.01 280);
-  --card: oklch(0.22 0.035 285);
-  --card-foreground: oklch(0.97 0.01 280);
-  --popover: oklch(0.22 0.035 285);
-  --popover-foreground: oklch(0.97 0.01 280);
-  --primary: oklch(0.72 0.19 295);
-  --primary-foreground: oklch(0.12 0.03 285);
-  --primary-glow: oklch(0.78 0.16 320);
-  --secondary: oklch(0.28 0.04 285);
-  --secondary-foreground: oklch(0.97 0.01 280);
-  --muted: oklch(0.26 0.03 285);
-  --muted-foreground: oklch(0.72 0.03 280);
-  --accent: oklch(0.32 0.06 295);
-  --accent-foreground: oklch(0.97 0.01 280);
-  --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 280);
-  --border: oklch(0.32 0.03 285 / 60%);
-  --input: oklch(0.28 0.03 285);
-  --ring: oklch(0.72 0.19 295);
-  --chart-1: oklch(0.72 0.19 295);
-  --chart-2: oklch(0.78 0.16 320);
-  --chart-3: oklch(0.68 0.17 220);
-  --chart-4: oklch(0.78 0.15 180);
-  --chart-5: oklch(0.82 0.16 90);
-  --sidebar: oklch(0.2 0.03 285);
-  --sidebar-foreground: oklch(0.97 0.01 280);
-  --sidebar-primary: oklch(0.72 0.19 295);
-  --sidebar-primary-foreground: oklch(0.12 0.03 285);
-  --sidebar-accent: oklch(0.28 0.04 285);
-  --sidebar-accent-foreground: oklch(0.97 0.01 280);
-  --sidebar-border: oklch(0.32 0.03 285 / 60%);
-  --sidebar-ring: oklch(0.72 0.19 295);
+  --radius: 0.625rem;
+  --background: oklch(0.985 0.002 250);
+  --foreground: oklch(0.18 0.02 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 250);
+  --primary: oklch(0.24 0.04 255);
+  --primary-foreground: oklch(0.99 0.002 250);
+  --primary-glow: oklch(0.45 0.08 250);
+  --secondary: oklch(0.96 0.005 250);
+  --secondary-foreground: oklch(0.22 0.03 255);
+  --muted: oklch(0.96 0.005 250);
+  --muted-foreground: oklch(0.48 0.015 250);
+  --accent: oklch(0.94 0.01 250);
+  --accent-foreground: oklch(0.22 0.03 255);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0.002 250);
+  --border: oklch(0.9 0.008 250);
+  --input: oklch(0.92 0.008 250);
+  --ring: oklch(0.32 0.05 255);
+  --chart-1: oklch(0.32 0.05 255);
+  --chart-2: oklch(0.55 0.12 230);
+  --chart-3: oklch(0.65 0.1 200);
+  --chart-4: oklch(0.7 0.1 170);
+  --chart-5: oklch(0.55 0.15 30);
+  --sidebar: oklch(0.97 0.003 250);
+  --sidebar-foreground: oklch(0.22 0.02 250);
+  --sidebar-primary: oklch(0.24 0.04 255);
+  --sidebar-primary-foreground: oklch(0.99 0.002 250);
+  --sidebar-accent: oklch(0.94 0.008 250);
+  --sidebar-accent-foreground: oklch(0.22 0.03 255);
+  --sidebar-border: oklch(0.9 0.008 250);
+  --sidebar-ring: oklch(0.32 0.05 255);
 
-  --gradient-aurora: radial-gradient(
-      circle at 20% 10%,
-      oklch(0.72 0.19 295 / 0.35),
-      transparent 55%
-    ),
-    radial-gradient(circle at 85% 20%, oklch(0.78 0.16 320 / 0.28), transparent 50%),
-    radial-gradient(circle at 50% 90%, oklch(0.68 0.17 220 / 0.22), transparent 55%);
   --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  --shadow-glow: 0 0 60px -10px color-mix(in oklab, var(--primary) 55%, transparent);
+  --shadow-elegant: 0 1px 2px oklch(0.18 0.02 250 / 0.04), 0 8px 24px -8px oklch(0.18 0.02 250 / 0.08);
+  --shadow-glow: 0 1px 3px oklch(0.18 0.02 250 / 0.06), 0 12px 40px -12px oklch(0.18 0.02 250 / 0.12);
 }
 
 @layer base {
@@ -124,11 +118,12 @@
       -apple-system,
       sans-serif;
     font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
   }
 
-  body {
-    background-image: var(--gradient-aurora);
-    background-attachment: fixed;
+  .font-serif {
+    font-family: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+    font-feature-settings: "liga", "dlig";
   }
 }
 
@@ -138,6 +133,9 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
   }
   .shadow-glow {
     box-shadow: var(--shadow-glow);
