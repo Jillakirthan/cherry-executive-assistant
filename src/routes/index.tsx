@@ -63,7 +63,12 @@ const SUGGESTIONS = [
 function ChatPage() {
   const [input, setInput] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  const [voiceOut, setVoiceOut] = useState(false);
+  const lastSpokenIdRef = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const sttSupported = isSpeechRecognitionSupported();
+  const ttsSupported = isSpeechSynthesisSupported();
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
     id: `cherry-${resetKey}`,
@@ -81,6 +86,68 @@ function ChatPage() {
     textareaRef.current?.focus();
   }, [resetKey, status]);
 
+  // Speak assistant replies when voice output is on
+  useEffect(() => {
+    if (!voiceOut || status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (lastSpokenIdRef.current === last.id) return;
+    const text = last.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join(" ")
+      .trim();
+    if (text) {
+      lastSpokenIdRef.current = last.id;
+      speak(text);
+    }
+  }, [voiceOut, status, messages]);
+
+  // Stop speech when toggled off / unmounted
+  useEffect(() => {
+    if (!voiceOut) cancelSpeech();
+    return () => cancelSpeech();
+  }, [voiceOut]);
+
+  const handleVoiceFinal = useCallback(
+    (text: string) => {
+      if (!text || isBusy) return;
+      void sendMessage({ text });
+      setInput("");
+    },
+    [isBusy, sendMessage],
+  );
+
+  const { listening, start: startListening, stop: stopListening } =
+    useSpeechRecognition({
+      onFinal: handleVoiceFinal,
+      onInterim: (t) => setInput(t),
+    });
+
+  const toggleMic = () => {
+    if (!sttSupported) {
+      toast.error("Voice input isn't supported in this browser. Try Chrome.");
+      return;
+    }
+    if (listening) {
+      stopListening();
+    } else {
+      cancelSpeech();
+      const ok = startListening();
+      if (!ok) toast.error("Couldn't start microphone.");
+    }
+  };
+
+  const toggleVoiceOut = () => {
+    if (!ttsSupported) {
+      toast.error("Voice output isn't supported in this browser.");
+      return;
+    }
+    setVoiceOut((v) => {
+      if (v) cancelSpeech();
+      return !v;
+    });
+  };
+
   const handleSubmit = useCallback(
     (message: PromptInputMessage) => {
       const text = message.text?.trim();
@@ -97,8 +164,11 @@ function ChatPage() {
   };
 
   const newChat = () => {
+    cancelSpeech();
+    stopListening();
     setMessages([]);
     setInput("");
+    lastSpokenIdRef.current = null;
     setResetKey((k) => k + 1);
   };
 
