@@ -1,6 +1,6 @@
-# Nova
+# Cherry
 
-> Nova is a fast, thoughtful general-purpose AI chat assistant.
+> Cherry is a fast, thoughtful general-purpose AI chat assistant.
 
 ## Pages
-- [Chat](/): Talk to Nova, a general-purpose AI assistant powered by Lovable AI.
+- [Chat](/): Talk to Cherry, a general-purpose AI assistant powered by Lovable AI.
