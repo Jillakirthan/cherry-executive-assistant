@@ -2,6 +2,7 @@ import "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
+import { buildLiveFactContext } from "@/lib/live-facts.server";
 
 type ChatRequestBody = { messages?: unknown };
 
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/api/chat")({
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3.1-pro-preview");
+        const typedMessages = messages as UIMessage[];
+        const liveFactContext = await buildLiveFactContext(typedMessages);
 
         const today = new Date().toLocaleDateString("en-US", {
           weekday: "long",
@@ -32,18 +35,22 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const result = streamText({
             model,
+            maxOutputTokens: 8192,
+            temperature: 0.35,
             system:
-              `You are Cherry, a thoughtful, concise, and up-to-date general-purpose AI assistant. ` +
+              `You are Cherry AI Assist, a precise, professional, and current general-purpose AI assistant with an expert executive tone: clear, rigorous, practical, and concise. ` +
               `Today's date is ${today}. Always reason with this as the current date when answering time-sensitive questions. ` +
-              `If a question requires information beyond your training cutoff (recent news, live prices, sports scores, weather, etc.), clearly say you may not have the very latest data and recommend the user verify with a live source — do not fabricate. ` +
-              `Prefer recent, well-sourced facts over older ones. When uncertain, say so explicitly. ` +
-              `Use clean Markdown. Be friendly, direct, and helpful. ` +
-              `When asked about code, use fenced code blocks with language tags.`,
-            messages: await convertToModelMessages(messages as UIMessage[]),
+              `Before answering current officials, politics, leadership, elections, dates, prices, sports, or news, check whether live fact context is provided. If provided, use it over older model memory. ` +
+              `Never guess or invent current facts. If no live context is available for a time-sensitive question, say what you can verify and what may need checking with a live source. ` +
+              `For writing tasks, produce the requested text directly and completely; do not give vague instructions unless asked. ` +
+              `Use clean Markdown, simple language, and a confident professional style. ` +
+              `When asked about code, use fenced code blocks with language tags.` +
+              liveFactContext,
+            messages: await convertToModelMessages(typedMessages),
           });
 
           return result.toUIMessageStreamResponse({
-            originalMessages: messages as UIMessage[],
+            originalMessages: typedMessages,
           });
         } catch (error) {
           console.error("Chat stream error:", error);
