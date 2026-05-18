@@ -18,7 +18,7 @@ const partSchema = z
 
 const messageSchema = z
   .object({
-    role: z.enum(["system", "user", "assistant", "data"]),
+    role: z.enum(["user", "assistant"]),
     content: z.string().max(MAX_TEXT_LEN).optional(),
     parts: z.array(partSchema).max(32).optional(),
   })
