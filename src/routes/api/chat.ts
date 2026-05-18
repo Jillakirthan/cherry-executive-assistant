@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3.1-pro-preview");
-        const typedMessages = messages as UIMessage[];
+        const typedMessages = messages as unknown as UIMessage[];
         const liveFactContext = await buildLiveFactContext(typedMessages);
 
         const today = new Date().toLocaleDateString("en-US", {
