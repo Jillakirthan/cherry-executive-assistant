@@ -32,10 +32,26 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        const { messages } = (await request.json()) as ChatRequestBody;
-        if (!Array.isArray(messages)) {
-          return new Response("Messages are required", { status: 400 });
+        const raw = await request.text();
+        if (raw.length > MAX_BODY_BYTES) {
+          return new Response("Payload too large", { status: 413 });
         }
+
+        let parsedJson: unknown;
+        try {
+          parsedJson = JSON.parse(raw);
+        } catch {
+          return new Response("Invalid JSON", { status: 400 });
+        }
+
+        const parsed = bodySchema.safeParse(parsedJson);
+        if (!parsed.success) {
+          return new Response(
+            JSON.stringify({ error: "Invalid request payload", issues: parsed.error.issues }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        const { messages } = parsed.data;
 
         const key = process.env.LOVABLE_API_KEY;
         if (!key) {
