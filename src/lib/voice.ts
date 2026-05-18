@@ -128,8 +128,11 @@ function pickVoice(): SpeechSynthesisVoice | null {
   );
 }
 
-export function speak(text: string) {
-  if (!isSpeechSynthesisSupported() || !text.trim()) return;
+export function speak(text: string, opts?: { onEnd?: () => void }) {
+  if (!isSpeechSynthesisSupported() || !text.trim()) {
+    opts?.onEnd?.();
+    return;
+  }
   const synth = window.speechSynthesis;
   synth.cancel();
   // strip markdown noise for cleaner speech
@@ -140,14 +143,34 @@ export function speak(text: string) {
     .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
-  if (!clean) return;
+  if (!clean) {
+    opts?.onEnd?.();
+    return;
+  }
   const utter = new SpeechSynthesisUtterance(clean);
   const voice = pickVoice();
   if (voice) utter.voice = voice;
   utter.rate = 1.02;
   utter.pitch = 1.05;
+  if (opts?.onEnd) utter.onend = () => opts.onEnd?.();
   synth.speak(utter);
 }
+
+const FOLLOWUPS = [
+  "Would you like a deeper explanation, or shall I explore related questions?",
+  "Want me to go further, or pivot to something related?",
+  "Shall I expand on this, or take it in a different direction?",
+];
+
+export function speakWithFollowup(text: string) {
+  speak(text, {
+    onEnd: () => {
+      const f = FOLLOWUPS[Math.floor(Math.random() * FOLLOWUPS.length)];
+      speak(f);
+    },
+  });
+}
+
 
 export function cancelSpeech() {
   if (isSpeechSynthesisSupported()) window.speechSynthesis.cancel();
