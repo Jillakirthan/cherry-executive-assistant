@@ -1,9 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, Mic, MicOff, Plus, Square, Volume2, VolumeX } from "lucide-react";
+import {
+  ArrowUpRight,
+  History,
+  Mic,
+  MicOff,
+  Plus,
+  Square,
+  Trash2,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 
 import {
   Conversation,
@@ -71,10 +82,59 @@ const CAPABILITIES = [
   },
 ];
 
+type HistorySession = {
+  id: string;
+  title: string;
+  updatedAt: number;
+  messages: UIMessage[];
+};
+
+const HISTORY_KEY = "cherry.history.v1";
+const MAX_SESSIONS = 40;
+
+function loadHistory(): HistorySession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(sessions: HistorySession[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(sessions.slice(0, MAX_SESSIONS)));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function firstText(m: UIMessage): string {
+  for (const p of m.parts) if (p.type === "text" && p.text) return p.text;
+  return "";
+}
+
+function deriveTitle(messages: UIMessage[]): string {
+  const firstUser = messages.find((m) => m.role === "user");
+  const t = firstUser ? firstText(firstUser) : "";
+  const clean = t.replace(/\s+/g, " ").trim();
+  if (!clean) return "New conversation";
+  return clean.length > 60 ? clean.slice(0, 57) + "…" : clean;
+}
+
 function ChatPage() {
   const [input, setInput] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  const [currentId, setCurrentId] = useState<string>(() =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()),
+  );
   const [voiceOut, setVoiceOut] = useState(false);
+  const [history, setHistory] = useState<HistorySession[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const lastSpokenIdRef = useRef<string | null>(null);
   const voiceTurnRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -97,6 +157,31 @@ function ChatPage() {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    setHistory(loadHistory());
+  }, []);
+
+  // Persist current conversation into history whenever it changes
+  useEffect(() => {
+    if (messages.length === 0) return;
+    setHistory((prev) => {
+      const next = [...prev];
+      const idx = next.findIndex((s) => s.id === currentId);
+      const session: HistorySession = {
+        id: currentId,
+        title: deriveTitle(messages),
+        updatedAt: Date.now(),
+        messages,
+      };
+      if (idx >= 0) next[idx] = session;
+      else next.unshift(session);
+      next.sort((a, b) => b.updatedAt - a.updatedAt);
+      const trimmed = next.slice(0, MAX_SESSIONS);
+      saveHistory(trimmed);
+      return trimmed;
+    });
+  }, [messages, currentId]);
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -188,10 +273,59 @@ function ChatPage() {
     setMessages([]);
     setInput("");
     lastSpokenIdRef.current = null;
+    setCurrentId(
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : String(Date.now()),
+    );
     setResetKey((k) => k + 1);
+    setHistoryOpen(false);
+  };
+
+  const openSession = (s: HistorySession) => {
+    cancelSpeech();
+    stopListening();
+    lastSpokenIdRef.current = null;
+    setCurrentId(s.id);
+    setResetKey((k) => k + 1);
+    // setMessages after the new useChat instance mounts
+    setTimeout(() => setMessages(s.messages), 0);
+    setHistoryOpen(false);
+  };
+
+  const deleteSession = (id: string) => {
+    setHistory((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      saveHistory(next);
+      return next;
+    });
+    if (id === currentId) newChat();
+  };
+
+  const clearAllHistory = () => {
+    saveHistory([]);
+    setHistory([]);
+    newChat();
   };
 
   const canSend = input.trim().length > 0 && !isBusy;
+
+  const historyGroups = useMemo(() => {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    const groups: { label: string; items: HistorySession[] }[] = [
+      { label: "Today", items: [] },
+      { label: "Previous 7 days", items: [] },
+      { label: "Earlier", items: [] },
+    ];
+    for (const s of history) {
+      const age = now - s.updatedAt;
+      if (age < day) groups[0].items.push(s);
+      else if (age < 7 * day) groups[1].items.push(s);
+      else groups[2].items.push(s);
+    }
+    return groups.filter((g) => g.items.length > 0);
+  }, [history]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -199,13 +333,24 @@ function ChatPage() {
       <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <span className="font-serif text-xl leading-none">C</span>
-            </div>
-            <div className="leading-tight">
-              <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Executive Assistant
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setHistoryOpen(true)}
+              title="History"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <History className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <span className="font-serif text-xl leading-none">C</span>
+              </div>
+              <div className="leading-tight">
+                <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Executive Assistant
+                </div>
               </div>
             </div>
           </div>
@@ -236,6 +381,110 @@ function ChatPage() {
           </div>
         </div>
       </header>
+
+      {/* History drawer */}
+      {historyOpen && (
+        <div className="fixed inset-0 z-40">
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setHistoryOpen(false)}
+            aria-hidden
+          />
+          <aside className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col border-r border-border bg-card shadow-elegant">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Sessions
+                </div>
+                <div className="font-serif text-lg leading-tight">History</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setHistoryOpen(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="border-b border-border px-3 py-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={newChat}
+                className="w-full justify-start gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New session
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-2 py-3">
+              {history.length === 0 ? (
+                <p className="px-3 py-6 text-center text-[13px] text-muted-foreground">
+                  No conversations yet.
+                </p>
+              ) : (
+                historyGroups.map((g) => (
+                  <div key={g.label} className="mb-4">
+                    <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {g.label}
+                    </div>
+                    <ul className="space-y-0.5">
+                      {g.items.map((s) => (
+                        <li key={s.id}>
+                          <div
+                            className={`group flex items-center gap-1 rounded-md px-2 py-1.5 transition ${
+                              s.id === currentId
+                                ? "bg-accent text-foreground"
+                                : "hover:bg-accent/60"
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => openSession(s)}
+                              className="min-w-0 flex-1 text-left"
+                            >
+                              <div className="truncate text-[13.5px] leading-5 text-foreground">
+                                {s.title}
+                              </div>
+                              <div className="truncate text-[11px] text-muted-foreground">
+                                {new Date(s.updatedAt).toLocaleString()} ·{" "}
+                                {s.messages.length} msg
+                              </div>
+                            </button>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => deleteSession(s.id)}
+                              title="Delete"
+                              className="opacity-0 transition group-hover:opacity-100"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </div>
+            {history.length > 0 && (
+              <div className="border-t border-border px-3 py-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllHistory}
+                  className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear all history
+                </Button>
+              </div>
+            )}
+          </aside>
+        </div>
+      )}
 
       {/* Main */}
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6">
