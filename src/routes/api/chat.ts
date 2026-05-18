@@ -1,19 +1,57 @@
 import "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
 import { buildLiveFactContext } from "@/lib/live-facts.server";
 
-type ChatRequestBody = { messages?: unknown };
+const MAX_MESSAGES = 50;
+const MAX_TEXT_LEN = 10_000;
+const MAX_BODY_BYTES = 256 * 1024; // 256 KB
+
+const partSchema = z
+  .object({
+    type: z.string().max(64).optional(),
+    text: z.string().max(MAX_TEXT_LEN).optional(),
+  })
+  .passthrough();
+
+const messageSchema = z
+  .object({
+    role: z.enum(["system", "user", "assistant", "data"]),
+    content: z.string().max(MAX_TEXT_LEN).optional(),
+    parts: z.array(partSchema).max(32).optional(),
+  })
+  .passthrough();
+
+const bodySchema = z.object({
+  messages: z.array(messageSchema).min(1).max(MAX_MESSAGES),
+});
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        const { messages } = (await request.json()) as ChatRequestBody;
-        if (!Array.isArray(messages)) {
-          return new Response("Messages are required", { status: 400 });
+        const raw = await request.text();
+        if (raw.length > MAX_BODY_BYTES) {
+          return new Response("Payload too large", { status: 413 });
         }
+
+        let parsedJson: unknown;
+        try {
+          parsedJson = JSON.parse(raw);
+        } catch {
+          return new Response("Invalid JSON", { status: 400 });
+        }
+
+        const parsed = bodySchema.safeParse(parsedJson);
+        if (!parsed.success) {
+          return new Response(
+            JSON.stringify({ error: "Invalid request payload", issues: parsed.error.issues }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        const { messages } = parsed.data;
 
         const key = process.env.LOVABLE_API_KEY;
         if (!key) {
@@ -22,7 +60,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3.1-pro-preview");
-        const typedMessages = messages as UIMessage[];
+        const typedMessages = messages as unknown as UIMessage[];
         const liveFactContext = await buildLiveFactContext(typedMessages);
 
         const today = new Date().toLocaleDateString("en-US", {
