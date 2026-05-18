@@ -29,6 +29,7 @@ import {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
   speak,
+  speakWithFollowup,
   useSpeechRecognition,
 } from "@/lib/voice";
 
