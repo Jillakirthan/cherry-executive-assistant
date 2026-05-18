@@ -1,10 +1,32 @@
 import "@tanstack/react-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
 import { buildLiveFactContext } from "@/lib/live-facts.server";
 
-type ChatRequestBody = { messages?: unknown };
+const MAX_MESSAGES = 50;
+const MAX_TEXT_LEN = 10_000;
+const MAX_BODY_BYTES = 256 * 1024; // 256 KB
+
+const partSchema = z
+  .object({
+    type: z.string().max(64).optional(),
+    text: z.string().max(MAX_TEXT_LEN).optional(),
+  })
+  .passthrough();
+
+const messageSchema = z
+  .object({
+    role: z.enum(["system", "user", "assistant", "data"]),
+    content: z.string().max(MAX_TEXT_LEN).optional(),
+    parts: z.array(partSchema).max(32).optional(),
+  })
+  .passthrough();
+
+const bodySchema = z.object({
+  messages: z.array(messageSchema).min(1).max(MAX_MESSAGES),
+});
 
 export const Route = createFileRoute("/api/chat")({
   server: {
