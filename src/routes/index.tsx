@@ -29,6 +29,7 @@ import {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
   speak,
+  speakWithFollowup,
   useSpeechRecognition,
 } from "@/lib/voice";
 
@@ -75,6 +76,7 @@ function ChatPage() {
   const [resetKey, setResetKey] = useState(0);
   const [voiceOut, setVoiceOut] = useState(false);
   const lastSpokenIdRef = useRef<string | null>(null);
+  const voiceTurnRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const sttSupported = isSpeechRecognitionSupported();
@@ -85,7 +87,12 @@ function ChatPage() {
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     onError: (err) => {
       console.error(err);
-      toast.error("Couldn't reach Cherry. Please try again.");
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(
+        msg.includes("Unauthorized") || msg.includes("401")
+          ? "Cherry endpoint isn't authorized. The AI key needs to be refreshed."
+          : "Couldn't reach Cherry. Please try again.",
+      );
     },
   });
 
@@ -96,7 +103,7 @@ function ChatPage() {
   }, [resetKey, status]);
 
   useEffect(() => {
-    if (!voiceOut || status !== "ready") return;
+    if (status !== "ready") return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (lastSpokenIdRef.current === last.id) return;
@@ -104,8 +111,12 @@ function ChatPage() {
       .map((p) => (p.type === "text" ? p.text : ""))
       .join(" ")
       .trim();
-    if (text) {
-      lastSpokenIdRef.current = last.id;
+    if (!text) return;
+    lastSpokenIdRef.current = last.id;
+    if (voiceTurnRef.current) {
+      voiceTurnRef.current = false;
+      speakWithFollowup(text);
+    } else if (voiceOut) {
       speak(text);
     }
   }, [voiceOut, status, messages]);
@@ -118,6 +129,7 @@ function ChatPage() {
   const handleVoiceFinal = useCallback(
     (text: string) => {
       if (!text || isBusy) return;
+      voiceTurnRef.current = true;
       void sendMessage({ text });
       setInput("");
     },

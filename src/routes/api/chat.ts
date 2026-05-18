@@ -55,11 +55,14 @@ export const Route = createFileRoute("/api/chat")({
 
         const key = process.env.LOVABLE_API_KEY;
         if (!key) {
-          return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+          return new Response(
+            JSON.stringify({ error: "Cherry isn't authorized: missing LOVABLE_API_KEY on the server." }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const gateway = createLovableAiGatewayProvider(key);
-        const model = gateway("google/gemini-3.1-pro-preview");
+        const model = gateway("google/gemini-3-flash-preview");
         const typedMessages = messages as unknown as UIMessage[];
         const liveFactContext = await buildLiveFactContext(typedMessages);
 
@@ -74,15 +77,16 @@ export const Route = createFileRoute("/api/chat")({
           const result = streamText({
             model,
             maxOutputTokens: 8192,
-            temperature: 0.35,
+            temperature: 0.4,
             system:
-              `You are Cherry AI Assist, a precise, professional, and current general-purpose AI assistant with an expert executive tone: clear, rigorous, practical, and concise. ` +
-              `Today's date is ${today}. Always reason with this as the current date when answering time-sensitive questions. ` +
-              `Before answering current officials, politics, leadership, elections, dates, prices, sports, or news, check whether live fact context is provided. If provided, use it over older model memory. ` +
+              `You are Cherry AI Assist, a precise, professional, current general-purpose AI assistant with an expert executive tone: clear, rigorous, practical, and concise. ` +
+              `Today's date is ${today}. Reason with this as the current date for time-sensitive questions. ` +
+              `Before answering current officials, politics, leadership, elections, dates, prices, sports, or news, check whether live fact context is provided. If provided, trust it over older model memory. ` +
               `Never guess or invent current facts. If no live context is available for a time-sensitive question, say what you can verify and what may need checking with a live source. ` +
               `For writing tasks, produce the requested text directly and completely; do not give vague instructions unless asked. ` +
-              `Use clean Markdown, simple language, and a confident professional style. ` +
-              `When asked about code, use fenced code blocks with language tags.` +
+              `Use clean Markdown: real paragraphs, headings only when helpful, and tight bullet lists. Avoid stray asterisks or unmatched code fences — formatting must always render cleanly. ` +
+              `When asked about code, use fenced code blocks with language tags. ` +
+              `Keep replies focused; do not pad with filler. End most assistant replies with one short, natural follow-up offer (for example: "Want me to go deeper, or explore a related angle?") unless the user explicitly asked for a one-shot answer.` +
               liveFactContext,
             messages: await convertToModelMessages(typedMessages),
           });
@@ -92,8 +96,9 @@ export const Route = createFileRoute("/api/chat")({
           });
         } catch (error) {
           console.error("Chat stream error:", error);
+          const detail = error instanceof Error ? error.message : "Unknown error";
           return new Response(
-            JSON.stringify({ error: "AI service unavailable. Please try again." }),
+            JSON.stringify({ error: `AI service unavailable: ${detail}` }),
             { status: 500, headers: { "Content-Type": "application/json" } },
           );
         }
