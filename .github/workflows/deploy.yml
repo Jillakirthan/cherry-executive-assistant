@@ -24,6 +24,7 @@ jobs:
       - name: Build
         run: bun run build
         env:
+          NODE_OPTIONS: --max-old-space-size=8192
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
