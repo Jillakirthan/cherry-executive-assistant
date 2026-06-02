@@ -639,7 +639,7 @@ function ChatPage() {
           <p className="mt-3 text-center text-[11px] tracking-wide text-muted-foreground">
             {listening
               ? "Listening — speak clearly."
-              : "Cherry verifies live facts. Always confirm before high-stakes decisions."}
+              : "Jilla Kirthan @ Cherry verifies live facts. Always confirm before high-stakes decisions."}
           </p>
         </div>
       </main>
