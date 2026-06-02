@@ -140,5 +140,19 @@
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+  @keyframes cherry-pulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0 rgba(16, 122, 87, 0));
+    }
+    50% {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 14px rgba(16, 122, 87, 0.55));
+    }
+  }
+  .animate-cherry-pulse {
+    animation: cherry-pulse 1.4s ease-in-out infinite;
+  }
 }
+
 
