@@ -613,9 +613,14 @@ function ChatPage() {
                     </MessageContent>
                   ) : (
                     <div className="flex w-full gap-4">
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-card">
-                        <span className="font-serif text-base leading-none text-foreground">C</span>
-                      </div>
+                      <img
+                        src={cherryLogo}
+                        alt="Cherry"
+                        width={32}
+                        height={32}
+                        loading="lazy"
+                        className="mt-1 h-8 w-8 shrink-0 rounded-md border border-border bg-card p-1"
+                      />
                       <div className="min-w-0 flex-1 pt-1">
                         <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           Cherry
@@ -637,9 +642,14 @@ function ChatPage() {
             {status === "submitted" && (
               <Message from="assistant" className="max-w-full">
                 <div className="flex w-full gap-4">
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-card">
-                    <span className="font-serif text-base leading-none text-foreground">C</span>
-                  </div>
+                  <img
+                    src={cherryLogo}
+                    alt="Cherry thinking"
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    className="mt-1 h-8 w-8 shrink-0 rounded-md border border-border bg-card p-1 animate-cherry-pulse"
+                  />
                   <div className="pt-1">
                     <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                       Cherry
