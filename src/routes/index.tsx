@@ -138,6 +138,7 @@ function ChatPage() {
   const [voiceOut, setVoiceOut] = useState(false);
   const [history, setHistory] = useState<HistorySession[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
   const lastSpokenIdRef = useRef<string | null>(null);
   const voiceTurnRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -346,9 +347,13 @@ function ChatPage() {
               <History className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <span className="font-serif text-xl leading-none">C</span>
-              </div>
+              <img
+                src={cherryLogo}
+                alt="Cherry logo"
+                width={36}
+                height={36}
+                className={`h-9 w-9 ${isBusy ? "animate-cherry-pulse" : ""}`}
+              />
               <div className="leading-tight">
                 <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
