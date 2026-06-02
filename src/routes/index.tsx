@@ -365,6 +365,16 @@ function ChatPage() {
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
+              size="sm"
+              onClick={() => setPricingOpen(true)}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+              title="Upgrade plan"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Upgrade</span>
+            </Button>
+            <Button
+              variant="ghost"
               size="icon-sm"
               onClick={toggleVoiceOut}
               title={voiceOut ? "Mute voice" : "Read replies aloud"}
@@ -389,6 +399,58 @@ function ChatPage() {
           </div>
         </div>
       </header>
+
+      {/* Pricing modal */}
+      {pricingOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setPricingOpen(false)}
+            aria-hidden
+          />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-elegant sm:p-8">
+              <button
+                type="button"
+                onClick={() => setPricingOpen(false)}
+                className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <Sparkles className="h-3 w-3" />
+                  Upgrade Cherry
+                </div>
+                <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
+                  Get more out of Cherry.
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-[13.5px] leading-6 text-muted-foreground">
+                  Pick a plan that fits your work. Upgrade anytime, cancel anytime.
+                </p>
+              </div>
+              <PricingPlans
+                onChoose={(plan) => {
+                  toast.success(
+                    `${plan.name} selected — billing isn't wired up yet, but your choice is noted.`,
+                  );
+                  setPricingOpen(false);
+                }}
+              />
+              <div className="mt-6 text-center">
+                <Link
+                  to="/pricing"
+                  onClick={() => setPricingOpen(false)}
+                  className="text-[12px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  See full pricing page →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* History drawer */}
       {historyOpen && (
