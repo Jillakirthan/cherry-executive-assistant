@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -9,12 +9,15 @@ import {
   Mic,
   MicOff,
   Plus,
+  Sparkles,
   Square,
   Trash2,
   Volume2,
   VolumeX,
   X,
 } from "lucide-react";
+import cherryLogo from "@/assets/cherry-logo.png";
+import { PricingPlans } from "@/components/pricing-plans";
 
 import {
   Conversation,
