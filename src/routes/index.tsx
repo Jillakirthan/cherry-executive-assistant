@@ -349,7 +349,7 @@ function ChatPage() {
               <div className="leading-tight">
                 <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Executive Assistant
+                  EXECUTIVE AI ASSISTANT
                 </div>
               </div>
             </div>
@@ -639,7 +639,7 @@ function ChatPage() {
           <p className="mt-3 text-center text-[11px] tracking-wide text-muted-foreground">
             {listening
               ? "Listening — speak clearly."
-              : "Cherry verifies live facts. Always confirm before high-stakes decisions."}
+              : "Jilla Kirthan @ Cherry verifies live facts. Always confirm before high-stakes decisions."}
           </p>
         </div>
       </main>
