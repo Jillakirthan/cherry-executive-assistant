@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -9,12 +9,15 @@ import {
   Mic,
   MicOff,
   Plus,
+  Sparkles,
   Square,
   Trash2,
   Volume2,
   VolumeX,
   X,
 } from "lucide-react";
+import cherryLogo from "@/assets/cherry-logo.png";
+import { PricingPlans } from "@/components/pricing-plans";
 
 import {
   Conversation,
@@ -135,6 +138,7 @@ function ChatPage() {
   const [voiceOut, setVoiceOut] = useState(false);
   const [history, setHistory] = useState<HistorySession[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
   const lastSpokenIdRef = useRef<string | null>(null);
   const voiceTurnRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -343,9 +347,13 @@ function ChatPage() {
               <History className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <span className="font-serif text-xl leading-none">C</span>
-              </div>
+              <img
+                src={cherryLogo}
+                alt="Cherry logo"
+                width={36}
+                height={36}
+                className={`h-9 w-9 ${isBusy ? "animate-cherry-pulse" : ""}`}
+              />
               <div className="leading-tight">
                 <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -355,6 +363,16 @@ function ChatPage() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPricingOpen(true)}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+              title="Upgrade plan"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Upgrade</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon-sm"
@@ -381,6 +399,58 @@ function ChatPage() {
           </div>
         </div>
       </header>
+
+      {/* Pricing modal */}
+      {pricingOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setPricingOpen(false)}
+            aria-hidden
+          />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-elegant sm:p-8">
+              <button
+                type="button"
+                onClick={() => setPricingOpen(false)}
+                className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <Sparkles className="h-3 w-3" />
+                  Upgrade Cherry
+                </div>
+                <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
+                  Get more out of Cherry.
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-[13.5px] leading-6 text-muted-foreground">
+                  Pick a plan that fits your work. Upgrade anytime, cancel anytime.
+                </p>
+              </div>
+              <PricingPlans
+                onChoose={(plan) => {
+                  toast.success(
+                    `${plan.name} selected — billing isn't wired up yet, but your choice is noted.`,
+                  );
+                  setPricingOpen(false);
+                }}
+              />
+              <div className="mt-6 text-center">
+                <Link
+                  to="/pricing"
+                  onClick={() => setPricingOpen(false)}
+                  className="text-[12px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  See full pricing page →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* History drawer */}
       {historyOpen && (
@@ -543,9 +613,14 @@ function ChatPage() {
                     </MessageContent>
                   ) : (
                     <div className="flex w-full gap-4">
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-card">
-                        <span className="font-serif text-base leading-none text-foreground">C</span>
-                      </div>
+                      <img
+                        src={cherryLogo}
+                        alt="Cherry"
+                        width={32}
+                        height={32}
+                        loading="lazy"
+                        className="mt-1 h-8 w-8 shrink-0 rounded-md border border-border bg-card p-1"
+                      />
                       <div className="min-w-0 flex-1 pt-1">
                         <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           Cherry
@@ -567,9 +642,14 @@ function ChatPage() {
             {status === "submitted" && (
               <Message from="assistant" className="max-w-full">
                 <div className="flex w-full gap-4">
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-card">
-                    <span className="font-serif text-base leading-none text-foreground">C</span>
-                  </div>
+                  <img
+                    src={cherryLogo}
+                    alt="Cherry thinking"
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    className="mt-1 h-8 w-8 shrink-0 rounded-md border border-border bg-card p-1 animate-cherry-pulse"
+                  />
                   <div className="pt-1">
                     <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                       Cherry
