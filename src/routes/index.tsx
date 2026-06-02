@@ -349,7 +349,7 @@ function ChatPage() {
               <div className="leading-tight">
                 <div className="text-[15px] font-semibold tracking-tight">Cherry</div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Executive Assistant
+                  EXECUTIVE AI ASSISTANT
                 </div>
               </div>
             </div>
