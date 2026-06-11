@@ -47,7 +47,7 @@ import {
   useSpeechRecognition,
 } from "@/lib/voice";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Cherry — Executive AI Assistant" },
