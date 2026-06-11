@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { LogOut } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -47,7 +49,7 @@ import {
   useSpeechRecognition,
 } from "@/lib/voice";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Cherry — Executive AI Assistant" },
@@ -130,6 +132,11 @@ function deriveTitle(messages: UIMessage[]): string {
 }
 
 function ChatPage() {
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
   const [input, setInput] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [currentId, setCurrentId] = useState<string>(() =>
@@ -395,6 +402,15 @@ function ChatPage() {
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">New session</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleLogout}
+              title="Sign out"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
