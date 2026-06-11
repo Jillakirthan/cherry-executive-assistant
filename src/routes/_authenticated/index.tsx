@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { LogOut } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -130,6 +132,11 @@ function deriveTitle(messages: UIMessage[]): string {
 }
 
 function ChatPage() {
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
   const [input, setInput] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [currentId, setCurrentId] = useState<string>(() =>
