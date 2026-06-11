@@ -403,6 +403,15 @@ function ChatPage() {
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">New session</span>
             </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleLogout}
+              title="Sign out"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </header>
